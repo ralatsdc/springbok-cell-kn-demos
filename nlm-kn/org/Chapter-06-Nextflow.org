@@ -1,13 +1,13 @@
 * Chapter 06: Use of Nextflow
 
-Ray LeClair <2024-09-11 Wed>
+Ray LeClair <2025-01-08 Wed>
 
 ** Objectives
 
-The NCBI Cell pipeline calls for processing CELLxGENE data using
-NS-Forest, DEseq, and GOenrichment to produce marker, binary, and
-differentially-expressed genes and GO biological process (BP)
-enrichment information. Since use of Nextflow is planned for
+The NLM Cell Knowledge Network pipeline calls for processing CELLxGENE
+data using NS-Forest, DEseq, and GOenrichment to produce marker,
+binary, and differentially-expressed genes and GO biological process
+(BP) enrichment information. Since use of Nextflow is planned for
 implementing these processing pipelines in a form that is platform
 agnostic and usable by researchers, the objectives of this document is
 to demonstrate how to

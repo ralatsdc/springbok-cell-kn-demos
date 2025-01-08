@@ -1,12 +1,12 @@
 * Chapter 04: Use of OntoGPT
 
-Ray LeClair <2024-07-08 Mon>
+Ray LeClair <2025-01-08 Wed>
 
 ** Objectives
 
-Since the NCBI Cell pipeline calls for the use of a Large Language
-Model (LLM) to process publications associated with CELLxGENE
-datasets, the objective of this document is to:
+Since the NLM Cell Knowledge Network pipeline calls for the use of a
+Large Language Model (LLM) to process publications associated with
+CELLxGENE datasets, the objective of this document is to:
 
 - Investigate the use of OntoGPT for publication processing
 
