@@ -87,7 +87,6 @@ To begin, we import modules, and assign module scope variables:
 
   DATA_DIR = "../data"
 
-  NCBI_CELL_DIR = f"{DATA_DIR}/ncbi-cell"
   NSFOREST_DIR = f"{DATA_DIR}/nsforest-2024-06-27"
 #+end_src
 

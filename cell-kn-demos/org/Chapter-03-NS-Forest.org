@@ -60,8 +60,6 @@ To begin, we import modules, and assign module scope variables:
 
   NSFOREST_DIR = f"{DATA_DIR}/nsforest-2024-06-27"
   TOTAL_COUNTS = 5000  # TODO: Select a more sensible value
-
-  NCBI_CELL_DIR = f"{DATA_DIR}/ncbi-cell"
 #+end_src
 
 Next we write the function, noting:
