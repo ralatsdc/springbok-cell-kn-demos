@@ -866,7 +866,7 @@ def main():
     parser = argparse.ArgumentParser(description="Load Manually Curated Data")
     parser.add_argument(
         "--mdata-dirname",
-        default=Path("../data/nlm-kn"),
+        default=Path("../data/cell-kn"),
         help="Name of directory containing manually curated data",
     )
     parser.add_argument(
