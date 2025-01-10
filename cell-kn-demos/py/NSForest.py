@@ -11,8 +11,6 @@ CELLXGENE_DIR = f"{DATA_DIR}/cellxgene"
 NSFOREST_DIR = f"{DATA_DIR}/nsforest-2024-06-27"
 TOTAL_COUNTS = 5000  # TODO: Select a more sensible value
 
-NCBI_CELL_DIR = f"{DATA_DIR}/ncbi-cell"
-
 
 def run_nsforest_on_file(h5ad_filename, cluster_header="cell_type"):
     """Run NSForest using the specified dataset filename, and

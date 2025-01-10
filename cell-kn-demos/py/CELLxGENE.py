@@ -17,7 +17,7 @@ CELLXGENE_DOMAIN_NAME = "cellxgene.cziscience.com"
 CELLXGENE_API_URL_BASE = f"https://api.{CELLXGENE_DOMAIN_NAME}"
 CELLXGENE_DIR = f"{DATA_DIR}/cellxgene"
 
-NLM_KN_DIR = f"{DATA_DIR}/nlm-kn"
+CELL_KN_DIR = f"{DATA_DIR}/cell-kn"
 
 HTTPS_SLEEP = 1
 
@@ -50,10 +50,10 @@ def get_metadata_and_datasets(
         DataFrame containing cell metadata
     """
     # Create and write, or read DataFrames
-    datasets_parquet = f"{NLM_KN_DIR}/datasets.parquet"
-    counts_parquet = f"{NLM_KN_DIR}/counts.parquet"
-    var_parquet = f"{NLM_KN_DIR}/var.parquet"
-    obs_parquet = f"{NLM_KN_DIR}/obs.parquet"
+    datasets_parquet = f"{CELL_KN_DIR}/datasets.parquet"
+    counts_parquet = f"{CELL_KN_DIR}/counts.parquet"
+    var_parquet = f"{CELL_KN_DIR}/var.parquet"
+    obs_parquet = f"{CELL_KN_DIR}/obs.parquet"
     if (
         not os.path.exists(datasets_parquet)
         or not os.path.exists(counts_parquet)
