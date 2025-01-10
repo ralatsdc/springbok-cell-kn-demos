@@ -150,7 +150,7 @@ Now initialize a named database:
 
 #+begin_src python :results output :session shared
   try:
-      database_name = "ncbi-cell-v0.1.0"
+      database_name = "nlm-cell-kn-v0.1.0"
       delete_database(database_name)
       db = create_or_get_database(database_name)
   except Exception:

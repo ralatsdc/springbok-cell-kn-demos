@@ -62,7 +62,8 @@ def run_nsforest_on_file(h5ad_filename, cluster_header="cell_type"):
         pp_adata = ns.pp.dendrogram(
             pp_adata,
             cluster_header,
-            save=False,
+            save=True,
+            show=True,
             output_folder=results_dirpath,
             outputfilename_suffix=cluster_header,
         )
@@ -83,6 +84,57 @@ def run_nsforest_on_file(h5ad_filename, cluster_header="cell_type"):
             cluster_header,
             output_folder=f"{results_dirpath}/",
             outputfilename_prefix=cluster_header,
+        )
+
+        # Create dendrogram to plot
+        dendrogram = []  # custom dendrogram order
+        dendrogram = list(
+            pp_adata.uns["dendrogram_" + cluster_header]["categories_ordered"]
+        )
+
+        # Create results to plot
+        to_plot = results.copy()
+        to_plot["clusterName"] = to_plot["clusterName"].astype("category")
+        to_plot["clusterName"] = to_plot["clusterName"].cat.set_categories(dendrogram)
+        to_plot = to_plot.sort_values("clusterName")
+        to_plot = to_plot.rename(columns={"NSForest_markers": "markers"})
+        to_plot.head()
+        markers_dict = dict(zip(to_plot["clusterName"], to_plot["markers"]))
+
+        print("Generating scanpy dotplot")
+        ns.pl.dotplot(
+            pp_adata,
+            markers_dict,
+            cluster_header,
+            dendrogram=dendrogram,
+            save=True,
+            show=True,
+            output_folder=results_dirpath,
+            outputfilename_suffix=cluster_header,
+        )
+
+        print("Generating scanpy stacked violin plot")
+        ns.pl.stackedviolin(
+            pp_adata,
+            markers_dict,
+            cluster_header,
+            dendrogram=dendrogram,
+            save=True,
+            show=True,
+            output_folder=results_dirpath,
+            outputfilename_suffix=cluster_header,
+        )
+
+        print("Generating scanpy matrix plot")
+        ns.pl.matrixplot(
+            pp_adata,
+            markers_dict,
+            cluster_header,
+            dendrogram=dendrogram,
+            save=True,
+            show=True,
+            output_folder=results_dirname,
+            outputfilename_suffix=cluster_header,
         )
 
     else:
