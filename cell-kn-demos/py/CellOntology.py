@@ -9,22 +9,92 @@ import ArangoDB as adb
 from lxml import etree
 from rdflib import Graph
 from rdflib.term import BNode, Literal
+import requests
 
+BIOPORTAL_DIRPATH = Path("../data/bioportal")
+
+OBO_DIRPATH = Path("../data/obo")
+OBO_PURLS = [
+    "http://purl.obolibrary.org/obo/cl.owl",
+    "http://purl.obolibrary.org/obo/ro.owl",
+]
+
+OWL_NS = "{http://www.w3.org/2002/07/owl#}"
+RDF_NS = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}"
+RDFS_NS = "{http://www.w3.org/2000/01/rdf-schema#}"
 
 URIREF_PATTERN = re.compile(r"/obo/([A-Za-z]*)_([A-Z0-9]*)")
 VALID_VERTICES = set(["UBERON", "CL", "GO", "NCBITaxon", "PR", "PATO", "CHEBI"])
 
 
-def parse_ols(ols_dir, ols_fnm):
-    """Parse ontology XML downloaded from the Ontology Lookup Service
-    to create a mapping from term to label, from label to term, and a
-    list of ontology identifiers.
+def update_ontologies():
+    """Download each specified ontology, parse version information
+    from new and current ontology, and replace current with new if new
+    is newer than current.
 
     Parameters
     ----------
-    ols_dir : str | Path
+    None
+
+    Returns
+    -------
+    None
+    """
+    for obo_purl in OBO_PURLS:
+
+        print(f"Getting {obo_purl}")
+        r = requests.get(obo_purl)
+
+        obo_stem = Path(urlparse(obo_purl).path).stem
+        obo_suffix = Path(urlparse(obo_purl).path).suffix
+        obo_filepath_new = OBO_DIRPATH / (obo_stem + "-new" + obo_suffix)
+        print(f"Writing {obo_filepath_new}")
+        with open(obo_filepath_new, "wb") as f:
+            f.write(r.content)
+
+        print(f"Parsing {obo_filepath_new}")
+        root = etree.parse(obo_filepath_new)
+        version_new = root.find(f"{OWL_NS}Ontology/{OWL_NS}versionInfo").text
+        print(f"Found new version {version_new}")
+
+        obo_filepath_cur = OBO_DIRPATH / (obo_stem + obo_suffix)
+        if obo_filepath_cur.exists():
+            print(f"Parsing {obo_filepath_cur}")
+            root = etree.parse(obo_filepath_cur)
+            version_cur = root.find(f"{OWL_NS}Ontology/{OWL_NS}versionInfo").text
+            print(f"Found current version {version_cur}")
+
+            if version_new > version_cur:
+                obo_filepath_old = OBO_DIRPATH / (
+                    obo_stem + "-" + version_cur + obo_suffix
+                )
+
+                print(f"Renaming {obo_filepath_cur} to {obo_filepath_old}")
+                obo_filepath_cur.rename(obo_filepath_old)
+
+                print(f"Renaming {obo_filepath_new} to {obo_filepath_cur}")
+                obo_filepath_new.rename(obo_filepath_cur)
+
+            else:
+                print(f"New version is not newer than current version")
+                print(f"Removing {obo_filepath_new}")
+                obo_filepath_new.unlink()
+
+        else:
+            print(f"Renaming {obo_filepath_new} to {obo_filepath_cur}")
+            obo_filepath_new.rename(obo_filepath_cur)
+
+
+def parse_obo(obo_dir, obo_fnm):
+    """Parse ontology XML downloaded from the OBO Foundry to create a
+    mapping from term to label, from label to term, and a list of
+    ontology identifiers.
+
+    Parameters
+    ----------
+    obo_dir : str | Path
         Name of directory containing downloaded ontology XML
-    ols_fnm : str
+    obo_fnm : str
         Name of downloaded ontology XML file
 
     Returns
@@ -36,13 +106,10 @@ def parse_ols(ols_dir, ols_fnm):
     ids : set
         Set containing all ontology identifiers found
     """
-    root = etree.parse(Path(ols_dir) / ols_fnm)
+    root = etree.parse(Path(obo_dir) / obo_fnm)
 
     # Define OWL XML namespaces and element types expected to contain
     # an RDF about attribute
-    owl = "{http://www.w3.org/2002/07/owl#}"
-    rdf = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}"
-    rdfs = "{http://www.w3.org/2000/01/rdf-schema#}"
     about_element_types = [
         "AnnotationProperty",
         "ObjectProperty",
@@ -57,10 +124,10 @@ def parse_ols(ols_dir, ols_fnm):
     for about_element_type in about_element_types:
 
         # Consider each element of the current type
-        for about_element in root.iter(f"{owl}{about_element_type}"):
+        for about_element in root.iter(f"{OWL_NS}{about_element_type}"):
 
             # Look for an about attribute
-            uriref = about_element.get(f"{rdf}about")
+            uriref = about_element.get(f"{RDF_NS}about")
             if uriref is None:
                 continue
 
@@ -69,7 +136,7 @@ def parse_ols(ols_dir, ols_fnm):
                 continue
 
             # Look for a label element
-            label_element = about_element.find(f"{rdfs}label")
+            label_element = about_element.find(f"{RDFS_NS}label")
             if label_element is None:
                 continue
             label = label_element.text
@@ -303,7 +370,6 @@ def create_bnode_triples_from_bnode_triple_sets(triple_sets, ro=None):
         'annotation' triples
     ignored_triples : list(tuple)
         List of tuples which contain all ignored triples
-    None
     """
     bnode_triples = []
     ignored_triples = []
@@ -855,11 +921,6 @@ def update_vertex_from_triple(adb_graph, vertex_collections, s, p, o, ro=None):
 def main():
 
     parser = argparse.ArgumentParser(description="Load Cell Ontology")
-    parser.add_argument(
-        "--bioportal-dirname",
-        default=Path("../data/bioportal"),
-        help="Name of directory containing ontologies downloaded from BioPortal",
-    )
     group = parser.add_argument_group("Cell Ontology (CL)", "Version of the CL to load")
     exclusive_group = group.add_mutually_exclusive_group(required=True)
     exclusive_group.add_argument(
@@ -871,20 +932,26 @@ def main():
     group.add_argument(
         "--include-bnodes", action="store_true", help="Include BNodes when loading"
     )
-    parser.add_argument(
-        "--ols-dirname",
-        default=Path("../data/ols"),
-        help="Name of directory containing ontologies downloaded from the Ontology Lookup Service",
+    group.add_argument(
+        "--update",
+        action="store_true",
+        help="Update ontologies downloaded from the OBO Foundry",
     )
 
     args = parser.parse_args()
 
+    if args.update:
+        update_ontologies()
+        return
+
     if args.slim:
+        cl_dirpath = BIOPORTAL_DIRPATH
         cl_filename = "general_cell_types_upper_slim.owl"
         db_name = "BioPortal-Slim"
         graph_name = "CL-Slim"
 
     if args.full:
+        cl_dirpath = OBO_DIRPATH
         cl_filename = "cl.owl"
         db_name = "BioPortal-Full"
         graph_name = "CL-Full"
@@ -896,12 +963,12 @@ def main():
     ro_filename = "ro.owl"
     log_filename = f"{graph_name}.log"
 
-    print(f"Parsing {args.bioportal_dirname / cl_filename} to populate rdflib graph")
+    print(f"Parsing {cl_dirpath / cl_filename} to populate rdflib graph")
     rdf_graph = Graph()
-    rdf_graph.parse(args.bioportal_dirname / cl_filename)
+    rdf_graph.parse(cl_dirpath / cl_filename)
 
-    print(f"Parsing {args.bioportal_dirname / cl_filename} to identify ids")
-    _, _, ids = parse_ols(args.bioportal_dirname, cl_filename)
+    print(f"Parsing {cl_dirpath / cl_filename} to identify ids")
+    _, _, ids = parse_obo(cl_dirpath, cl_filename)
     print(ids)
 
     print("Counting triple types in rdflib graph")
@@ -925,7 +992,7 @@ def main():
 
     print("Collecting and printing all blank node triple sets in rdflib graph")
     bnode_triple_sets = {}
-    ro, _, _ = parse_ols(args.ols_dirname, ro_filename)
+    ro, _, _ = parse_obo(OBO_DIRPATH, ro_filename)
     collect_bnode_triple_sets(rdf_graph, bnode_triple_sets, use="subject", ro=ro)
     collect_bnode_triple_sets(rdf_graph, bnode_triple_sets, use="object", ro=ro)
     bnode_triple_sets_filename = log_filename.replace(".log", "_bnode_triple_sets.txt")

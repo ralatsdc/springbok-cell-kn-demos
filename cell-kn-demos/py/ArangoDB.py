@@ -13,7 +13,6 @@ SYS_DB = ARANGO_CLIENT.db("_system", username="root", password=ARANGO_ROOT_PASSW
 
 DATA_DIR = "../data"
 
-NCBI_CELL_DIR = f"{DATA_DIR}/ncbi-cell"
 NSFOREST_DIR = f"{DATA_DIR}/nsforest-2024-06-27"
 
 

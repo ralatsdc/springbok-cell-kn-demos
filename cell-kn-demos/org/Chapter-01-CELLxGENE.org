@@ -88,7 +88,7 @@ To begin, we import modules, and assign module scope variables:
   CELLXGENE_API_URL_BASE = f"https://api.{CELLXGENE_DOMAIN_NAME}"
   CELLXGENE_DIR = f"{DATA_DIR}/cellxgene"
 
-  NLM_KN_DIR = f"{DATA_DIR}/nlm-kn"
+  CELL_KN_DIR = f"{DATA_DIR}/cell-kn"
 
   HTTPS_SLEEP = 1
 #+end_src
@@ -124,10 +124,10 @@ Next we write the function:
           DataFrame containing cell metadata
       """
       # Create and write, or read DataFrames
-      datasets_parquet = f"{NLM_KN_DIR}/datasets.parquet"
-      counts_parquet = f"{NLM_KN_DIR}/counts.parquet"
-      var_parquet = f"{NLM_KN_DIR}/var.parquet"
-      obs_parquet = f"{NLM_KN_DIR}/obs.parquet"
+      datasets_parquet = f"{CELL_KN_DIR}/datasets.parquet"
+      counts_parquet = f"{CELL_KN_DIR}/counts.parquet"
+      var_parquet = f"{CELL_KN_DIR}/var.parquet"
+      obs_parquet = f"{CELL_KN_DIR}/obs.parquet"
       if (
           not os.path.exists(datasets_parquet)
           or not os.path.exists(counts_parquet)
@@ -230,7 +230,7 @@ to a ~.parquet~ file, so that later we can simply read the ~.parquet~
 file.
 
 #+begin_src python :results output :session shared
-  summary_parquet = f"{NLM_KN_DIR}/summary.parquet"
+  summary_parquet = f"{CELL_KN_DIR}/summary.parquet"
   if not os.path.exists(summary_parquet):
       # Define columns needed from obs
       obs_columns = [
@@ -269,7 +269,7 @@ file.
       summary.to_parquet(summary_parquet)
 
       print("Writing summary CSV")
-      summary_csv = f"{NLM_KN_DIR}/summary.csv"
+      summary_csv = f"{CELL_KN_DIR}/summary.csv"
       summary.to_csv(summary_csv)
 
   else:
