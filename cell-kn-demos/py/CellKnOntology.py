@@ -12,15 +12,15 @@ from CellOntology import (
 )
 
 
-def read_excel(nlm_kn_dirname, nlm_kn_filename):
-    """Read NLM KN Ontology Excel file.
+def read_excel(cell_kn_dirname, cell_kn_filename):
+    """Read Cell KN Ontology Excel file.
 
     Parameters
     ----------
-    nlm_kn_dirname : str | Path
-        The name of directory containing NLM KN ontology
-    nlm_kn_filename : str
-        The name of file containing NLM KN ontology
+    cell_kn_dirname : str | Path
+        The name of directory containing Cell KN ontology
+    cell_kn_filename : str
+        The name of file containing Cell KN ontology
 
     Returns
     -------
@@ -30,11 +30,11 @@ def read_excel(nlm_kn_dirname, nlm_kn_filename):
         The DataFrame containing the relations of the schema names to
         CURIEs
     """
-    schema = pd.read_excel(Path(nlm_kn_dirname) / nlm_kn_filename, sheet_name=0).iloc[
+    schema = pd.read_excel(Path(cell_kn_dirname) / cell_kn_filename, sheet_name=0).iloc[
         :, 0:3
     ]
     relations = pd.read_excel(
-        Path(nlm_kn_dirname) / nlm_kn_filename, sheet_name=1
+        Path(cell_kn_dirname) / cell_kn_filename, sheet_name=1
     ).iloc[:, 0:3]
 
     return schema, relations
@@ -86,16 +86,16 @@ def create_triples(schema, relations, ro=None):
 
 def main():
 
-    parser = argparse.ArgumentParser(description="Load NLM-KN Ontology")
+    parser = argparse.ArgumentParser(description="Load Cell-KN Ontology")
     parser.add_argument(
-        "--nlm-kn-dirname",
-        default=Path("../data/nlm-kn"),
-        help="Name of directory containing NLM KN ontology",
+        "--cell-kn-dirname",
+        default=Path("../data/cell-kn"),
+        help="Name of directory containing Cell KN ontology",
     )
     parser.add_argument(
-        "--nlm-kn-filename",
+        "--cell-kn-filename",
         default=Path("Cell_Phenotype_KG_Schema_v2.xlsx"),
-        help="Name of file containing NLM KN ontology",
+        help="Name of file containing Cell KN ontology",
     )
     group = parser.add_argument_group("Cell Ontology (CL)", "Version of the CL loaded")
     exclusive_group = group.add_mutually_exclusive_group(required=True)
@@ -134,8 +134,8 @@ def main():
     ro_filename = "ro.owl"
     log_filename = f"{graph_name}.log"
 
-    print(f"Reading {args.nlm_kn_dirname / args.nlm_kn_filename}")
-    schema, relations = read_excel(args.nlm_kn_dirname, args.nlm_kn_filename)
+    print(f"Reading {args.cell_kn_dirname / args.cell_kn_filename}")
+    schema, relations = read_excel(args.cell_kn_dirname, args.cell_kn_filename)
 
     print("Creating triples")
     ro, _, _ = parse_ols(args.ols_dirname, ro_filename)

@@ -12,7 +12,7 @@ annot = sc.queries.biomart_annotations(
 ).set_index("external_gene_name")
 
 # Load the manually curated data
-mdata_dirname = Path("../data/nlm-kn")
+mdata_dirname = Path("../data/cell-kn")
 mdata_filename = "HLCA_CellRef_matching_ver3_import1.xlsm"
 mdata = pd.read_excel(mdata_dirname / mdata_filename, header=1, skiprows=0)
 
