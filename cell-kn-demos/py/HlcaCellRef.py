@@ -188,6 +188,7 @@ def load_gdata(mdata, gdata_dirname, gdata_filename, nm2ids):
             "diseases",
             "drugs",
             "interactions",
+            "pharmacogenetics",
             "tractability",
             "expression",
             "depmap",
