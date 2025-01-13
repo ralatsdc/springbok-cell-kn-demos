@@ -816,11 +816,11 @@ def insert_vertices_and_edges_from_gdata_for_gene_name_and_id(
             vertex_collections["disease_cls"].insert(disease)
         disease_cls_vertex = vertex_collections["disease_cls"].get(_key)
 
-        # Define and collect (gene_cls, IS_BASIS_FOR_CONDITION, disease_cls) triples
+        # Define and collect (gene_cls, IS_GENETIC_BASIS_FOR_CONDITION, disease_cls) triples
         triples.append(
             (
                 gene_cls_vertex,
-                {"label": "IS_BASIS_FOR_CONDITION"},
+                {"label": "IS_GENETIC_BASIS_FOR_CONDITION"},
                 disease_cls_vertex,
             )
         )
