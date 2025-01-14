@@ -24,7 +24,7 @@ RDF_NS = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}"
 RDFS_NS = "{http://www.w3.org/2000/01/rdf-schema#}"
 
 URIREF_PATTERN = re.compile(r"/obo/([A-Za-z]*)_([A-Z0-9]*)")
-VALID_VERTICES = set(["UBERON", "CL", "GO", "NCBITaxon", "PR", "PATO", "CHEBI"])
+VALID_VERTICES = set(["UBERON", "CL", "GO", "NCBITaxon", "PR", "PATO", "CHEBI", "CLM"])
 
 
 def update_ontologies():
@@ -921,28 +921,32 @@ def update_vertex_from_triple(adb_graph, vertex_collections, s, p, o, ro=None):
 def main():
 
     parser = argparse.ArgumentParser(description="Load Cell Ontology")
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help="update ontologies downloaded from the OBO Foundry",
+    )
+    parser.add_argument(
+        "--label",
+        default="",
+        help="label to add to database_name",
+    )
+    parser.add_argument(
+        "--include-bnodes", action="store_true", help="include BNodes when loading"
+    )
     group = parser.add_argument_group("Cell Ontology (CL)", "Version of the CL to load")
     exclusive_group = group.add_mutually_exclusive_group(required=True)
     exclusive_group.add_argument(
-        "--slim", action="store_true", help="Load the slim ontology"
+        "--slim", action="store_true", help="load the slim ontology"
     )
     exclusive_group.add_argument(
-        "--full", action="store_true", help="Load the full ontology"
-    )
-    group.add_argument(
-        "--include-bnodes", action="store_true", help="Include BNodes when loading"
-    )
-    group.add_argument(
-        "--update",
-        action="store_true",
-        help="Update ontologies downloaded from the OBO Foundry",
+        "--full", action="store_true", help="load the full ontology"
     )
 
     args = parser.parse_args()
 
     if args.update:
         update_ontologies()
-        return
 
     if args.slim:
         cl_dirpath = BIOPORTAL_DIRPATH
@@ -960,6 +964,9 @@ def main():
         db_name += "-BNodes"
         graph_name += "-BNodes"
 
+    if args.label:
+        db_name += f"-{args.label}"
+        
     ro_filename = "ro.owl"
     log_filename = f"{graph_name}.log"
 

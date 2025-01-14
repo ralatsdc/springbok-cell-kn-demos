@@ -2,25 +2,27 @@ import argparse
 from pathlib import Path
 
 import pandas as pd
+from rdflib.term import Literal, URIRef
 
 import ArangoDB as adb
 from CellOntology import (
-    load_triples_into_adb_graph,
-    parse_ols,
-    parse_term,
+    OBO_DIRPATH,
     VALID_VERTICES,
+    load_triples_into_adb_graph,
+    parse_obo,
+    parse_term,
 )
 
 
-def read_excel(cell_kn_dirname, cell_kn_filename):
-    """Read Cell KN Ontology Excel file.
+def read_cel_kn_schema(cell_kn_dirname, cell_kn_filename):
+    """Read slightly, manually modified Cell KN schema Excel file.
 
     Parameters
     ----------
     cell_kn_dirname : str | Path
-        The name of directory containing Cell KN ontology
+        The name of the directory containing the Cell KN schema
     cell_kn_filename : str
-        The name of file containing Cell KN ontology
+        The name of the file containing the Cell KN shema
 
     Returns
     -------
@@ -28,20 +30,27 @@ def read_excel(cell_kn_dirname, cell_kn_filename):
         The DataFrame containing the schema name triples
     relations : pd.DataFrame
         The DataFrame containing the relations of the schema names to
-        CURIEs
+        labels and CURIEs
     """
     schema = pd.read_excel(Path(cell_kn_dirname) / cell_kn_filename, sheet_name=0).iloc[
-        :, 0:3
+        :, 0:6
     ]
     relations = pd.read_excel(
-        Path(cell_kn_dirname) / cell_kn_filename, sheet_name=1
+        Path(cell_kn_dirname) / cell_kn_filename, sheet_name=2
     ).iloc[:, 0:3]
 
-    return schema, relations
+    return (
+        schema.loc[
+            schema["Connections"] == "Class-Class",
+            ["Subject Node", "Predicate Relation", "Object Node", "Connections"],
+        ].copy(),
+        relations,
+    )
 
 
 def create_triples(schema, relations, ro=None):
-    """Create triples by translating schema names using CURIEs and a default URL.
+    """Create triples by translating schema names to labels, and to
+    CURIEs with a default URL.
 
     Parameters
     ----------
@@ -49,7 +58,7 @@ def create_triples(schema, relations, ro=None):
         The DataFrame containing the schema name triples
     relations : pd.DataFrame
         The DataFrame containing the relations of the schema names to
-        CURIEs
+        labels and CURIEs
 
     Returns
     -------
@@ -58,98 +67,123 @@ def create_triples(schema, relations, ro=None):
     """
     triples = []
 
+    # Create mapping from name to label
+    n2l = {}
+    for _, row in relations.iterrows():
+        n2l[row.iloc[0].replace("_class", "")] = row.iloc[1]
+
     # Create mapping from name to CURIE
     n2c = {}
     for _, row in relations.iterrows():
-        n2c[row.iloc[0]] = row.iloc[2]
+        n2c[row.iloc[0].replace("_class", "")] = row.iloc[2]
 
-    # Create triples by translating names using CURIEs and a default
-    # URL
+    # Map name to term, and collect ids
     ids = set()
+
+    def n2t(name):
+        if not name in n2c:
+            print(f"Skipping name: {name}")
+            return
+
+        curie = n2c[name]
+        if "rdf:type" in curie:
+            term = URIRef("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+
+        elif "rdfs:subClassOf" in curie:
+            term = URIRef("http://www.w3.org/2000/01/rdf-schema#subClassOf")
+
+        else:
+            term = URIRef(f"http://purl.obolibrary.org/obo/{curie.replace(':', '_')}")
+
+        id, _, _, _, _ = parse_term(term, ro=ro)
+        ids.add(id)
+
+        return term
+
+    # Create triples by translating schema names to labels, and to
+    # CURIEs with a default URL.
     for _, row in schema.iterrows():
-        triple = []
-        for item in row:
-            if not item in n2c:
-                print(f"Skipping item: {item}")
-                continue
-            term = f"http://purl.obolibrary.org/obo/{n2c[item].replace(':', '_')}"
-            triple.append(term)
-            id, _, _, _, _ = parse_term(term, ro=ro)
-            ids.add(id)
-        if len(triple) != 3:
-            print(f"Skipping row: {row.to_list()}")
+
+        # Create subject from row
+        s = n2t(row.iloc[0])
+        if s is None:
+            print(f"Skipping row due to subject: {s}")
             continue
-        triples.append(tuple(triple))
+
+        # Create triple to label subject
+        if row.iloc[0] in n2l:
+            triple = (
+                s,
+                URIRef("http://www.w3.org/2000/01/rdf-schema#label"),
+                Literal(n2l[row.iloc[0]]),
+            )
+            triples.append(triple)
+
+        # Create predicate from row
+        p = n2t(row.iloc[1])
+        if p is None:
+            print(f"Skipping row due to predicate: {p}")
+            continue
+
+        # Create object from row
+        o = n2t(row.iloc[2])
+        if o is None:
+            print(f"Skipping row due to object: {o}")
+            continue
+
+        # Create triple to label object
+        if row.iloc[2] in n2l:
+            triple = (
+                o,
+                URIRef("http://www.w3.org/2000/01/rdf-schema#label"),
+                Literal(n2l[row.iloc[2]]),
+            )
+            triples.append(triple)
+
+        triple = (s, p, o)
+        triples.append(triple)
 
     return triples, ids
 
 
 def main():
 
-    parser = argparse.ArgumentParser(description="Load Cell-KN Ontology")
+    parser = argparse.ArgumentParser(description="Load Cell KN schema")
     parser.add_argument(
         "--cell-kn-dirname",
         default=Path("../data/cell-kn"),
-        help="Name of directory containing Cell KN ontology",
+        help="name of directory containing Cell KN schema",
     )
     parser.add_argument(
         "--cell-kn-filename",
-        default=Path("Cell_Phenotype_KG_Schema_v2.xlsx"),
-        help="Name of file containing Cell KN ontology",
-    )
-    group = parser.add_argument_group("Cell Ontology (CL)", "Version of the CL loaded")
-    exclusive_group = group.add_mutually_exclusive_group(required=True)
-    exclusive_group.add_argument(
-        "--slim", action="store_true", help="Slim ontology loaded"
-    )
-    exclusive_group.add_argument(
-        "--full", action="store_true", help="Full ontology loaded"
-    )
-    group.add_argument("--include-bnodes", action="store_true", help="BNodes included")
-    parser.add_argument(
-        "--ols-dirname",
-        default=Path("../data/ols"),
-        help="Name of directory containing ontologies downloaded from the Ontology Lookup Service",
+        default=Path("Cell_Phenotype_KG_Schema_v2_2025-01-13.xlsx"),
+        help="name of file containing Cell KN schema",
     )
 
     args = parser.parse_args()
 
-    if args.slim:
-        cl_filename = "general_cell_types_upper_slim.owl"
-        db_name = "BioPortal-Slim"
-        graph_name = "CL-Slim"
-
-    if args.full:
-        cl_filename = "cl.owl"
-        db_name = "BioPortal-Full"
-        graph_name = "CL-Full"
-
-    if args.include_bnodes:
-        db_name += "-BNodes"
-        graph_name += "-BNodes"
-
-    db_name += "-Test"
-    graph_name += "-Test"
+    db_name = "NIH-NLM"
+    graph_name = "Cell-KN-RL"
 
     ro_filename = "ro.owl"
     log_filename = f"{graph_name}.log"
 
     print(f"Reading {args.cell_kn_dirname / args.cell_kn_filename}")
-    schema, relations = read_excel(args.cell_kn_dirname, args.cell_kn_filename)
+    schema, relations = read_cel_kn_schema(args.cell_kn_dirname, args.cell_kn_filename)
 
     print("Creating triples")
-    ro, _, _ = parse_ols(args.ols_dirname, ro_filename)
+    ro, _, _ = parse_obo(OBO_DIRPATH, ro_filename)
     triples, ids = create_triples(schema, relations, ro=ro)
 
-    # print("Creating ArangoDB database and graph, and loading triples")
-    # VALID_VERTICES.update(ids.difference(set([None, "BFO", "IAO", "RO"])))
-    # db = adb.create_or_get_database(db_name)
-    # adb_graph = adb.create_or_get_graph(db, graph_name)
-    # vertex_collections = {}
-    # edge_collections = {}
-    # load_triples_into_adb_graph(
-    #     triples, adb_graph, vertex_collections, edge_collections, ro=ro
-    # )
+    print("Creating ArangoDB database and graph, and loading triples")
+    VALID_VERTICES.update(ids.difference(set([None, "BFO", "IAO", "RO"])))
+    db = adb.create_or_get_database(db_name)
+    adb_graph = adb.create_or_get_graph(db, graph_name)
+    vertex_collections = {}
+    edge_collections = {}
+    load_triples_into_adb_graph(
+        triples, adb_graph, vertex_collections, edge_collections, ro=ro
+    )
 
 
 if __name__ == "__main__":
