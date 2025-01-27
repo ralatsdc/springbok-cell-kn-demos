@@ -1,13 +1,14 @@
 import logging
 import os
+from pathlib import Path
 import re
 import subprocess
 from time import sleep
 from traceback import print_exception
-
-import cellxgene_census
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
+import cellxgene_census
 import pandas as pd
 import requests
 
@@ -259,7 +260,7 @@ def get_and_download_dataset_h5ad_file(dataset_series):
             continue
 
         # Found an H5AD file, so download it, if needed
-        dataset_filename = f"{dataset_id}.{asset['filetype']}"
+        dataset_filename = Path(urlparse(asset["url"]).path).name
         dataset_filepath = f"{CELLXGENE_DIR}/{dataset_filename}"
         if not os.path.exists(dataset_filepath):
             print(f"Downloading dataset file: {dataset_filepath}")
