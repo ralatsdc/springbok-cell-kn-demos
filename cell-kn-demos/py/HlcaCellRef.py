@@ -188,6 +188,7 @@ def load_gdata(mdata, gdata_dirname, gdata_filename, nm2ids):
             "diseases",
             "drugs",
             "interactions",
+            "pharmacogenetics",
             "tractability",
             "expression",
             "depmap",
@@ -815,11 +816,11 @@ def insert_vertices_and_edges_from_gdata_for_gene_name_and_id(
             vertex_collections["disease_cls"].insert(disease)
         disease_cls_vertex = vertex_collections["disease_cls"].get(_key)
 
-        # Define and collect (gene_cls, IS_BASIS_FOR_CONDITION, disease_cls) triples
+        # Define and collect (gene_cls, IS_GENETIC_BASIS_FOR_CONDITION, disease_cls) triples
         triples.append(
             (
                 gene_cls_vertex,
-                {"label": "IS_BASIS_FOR_CONDITION"},
+                {"label": "IS_GENETIC_BASIS_FOR_CONDITION"},
                 disease_cls_vertex,
             )
         )
@@ -867,27 +868,32 @@ def main():
     parser.add_argument(
         "--mdata-dirname",
         default=Path("../data/cell-kn"),
-        help="Name of directory containing manually curated data",
+        help="name of directory containing manually curated data",
     )
     parser.add_argument(
         "--mdata-filename",
         default="HLCA_CellRef-ver-0.4.0.xlsm",
-        help="Name of file containing manually curated data",
+        help="name of file containing manually curated data",
+    )
+    parser.add_argument(
+        "--label",
+        default="",
+        help="label to add to database_name",
+    )
+    parser.add_argument(
+        "--include-bnodes",
+        action="store_true",
+        help="assume BNodes were included when loading",
     )
     group = parser.add_argument_group(
         "Cell Ontology (CL)", "Assume this version of the CL has been loaded"
     )
     exclusive_group = group.add_mutually_exclusive_group(required=True)
     exclusive_group.add_argument(
-        "--slim", action="store_true", help="Assume the slim ontology has been loaded"
+        "--slim", action="store_true", help="assume the slim ontology has been loaded"
     )
     exclusive_group.add_argument(
-        "--full", action="store_true", help="Assume the full ontology has been loaded"
-    )
-    group.add_argument(
-        "--include-bnodes",
-        action="store_true",
-        help="Assume BNodes were included when loading",
+        "--full", action="store_true", help="assume the full ontology has been loaded"
     )
 
     args = parser.parse_args()
@@ -906,6 +912,9 @@ def main():
     if args.include_bnodes:
         db_name += "-BNodes"
         graph_name += "-BNodes"
+
+    if args.label:
+        db_name += f"-{args.label}"
 
     print(f"Loading {args.mdata_dirname / args.mdata_filename}")
     mdata = load_mdata(args.mdata_dirname, args.mdata_filename)
