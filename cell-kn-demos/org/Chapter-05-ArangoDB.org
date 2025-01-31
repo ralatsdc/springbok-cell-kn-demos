@@ -37,11 +37,11 @@ as follows:
     -e ARANGO_NOAUTH=1 \
     -p 8529:8529 \
     -d \
-    -v $ARANGODB_HOME:/var/lib/arangodb3 \
+    -v $ARANGO_DB_HOME:/var/lib/arangodb3 \
     arangodb
 #+end_src
 
-where ~ARANGODB_HOME~ has been set to the name of the directory in
+where ~ARANGO_DB_HOME~ has been set to the name of the directory in
 which to persist data. Now ~python-arango~ can be used to interact
 with the database system using Python.
 
@@ -82,7 +82,7 @@ To begin, we import modules, and assign module scope variables:
 
   ARANGO_URL = "http://localhost:8529"
   ARANGO_CLIENT = ArangoClient(hosts=ARANGO_URL)
-  ARANGO_ROOT_PASSWORD = os.getenv("ARANGO_ROOT_PASSWORD", "")
+  ARANGO_ROOT_PASSWORD = os.getenv("ARANGO_DB_PASSWORD", "")
   SYS_DB = ARANGO_CLIENT.db("_system", username="root", password=ARANGO_ROOT_PASSWORD)
 
   DATA_DIR = "../data"

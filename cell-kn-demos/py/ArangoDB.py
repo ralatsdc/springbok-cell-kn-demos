@@ -8,7 +8,7 @@ import pandas as pd
 
 ARANGO_URL = "http://localhost:8529"
 ARANGO_CLIENT = ArangoClient(hosts=ARANGO_URL)
-ARANGO_ROOT_PASSWORD = os.getenv("ARANGO_ROOT_PASSWORD", "")
+ARANGO_ROOT_PASSWORD = os.getenv("ARANGO_DB_PASSWORD", "")
 SYS_DB = ARANGO_CLIENT.db("_system", username="root", password=ARANGO_ROOT_PASSWORD)
 
 DATA_DIR = "../data"
