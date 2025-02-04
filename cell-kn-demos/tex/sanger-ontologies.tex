@@ -1,0 +1,201 @@
+\documentclass[aspectratio=169,xcolor=dvipsnames]{beamer}
+
+\mode<presentation>
+{
+  \usetheme{default}
+
+  \usecolortheme{default}
+  \usefonttheme{default}
+  \useinnertheme{circles}
+
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+
+  \setbeamertemplate{title page}[default][center]
+  \setbeamercolor{title}{fg=black}
+  \setbeamercolor{subtitle}{fg=black}
+  \setbeamercolor{author}{fg=black}
+  \setbeamercolor{date}{fg=black}
+
+  \setbeamertemplate{frametitle}[default][leftskip=1.0cm]
+  \setbeamercolor{frametitle}{fg=black}
+  
+  \setbeamertemplate{footline}[text line]{\color{white}\raisebox{9.75pt}{\hspace{-25pt}\insertframenumber/\inserttotalframenumber}}
+}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{mathrsfs}
+\usepackage[mathscr]{euscript}
+\usepackage{pifont}
+\usepackage[utf8x]{inputenc}
+\usepackage[normalem]{ulem}
+
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+
+\hypersetup{colorlinks=true,citecolor=black,linkcolor=black,urlcolor=blue}
+
+\title[]{Ontologies Loaded by Sanger}
+\subtitle[]{IDs, Descriptions, Counts by Triple Type, and Size}
+\author{Raymond LeClair}
+\date{Working Copy of February 3, 2025}
+
+\begin{document}
+
+{
+  \usebackgroundtemplate{\includegraphics[width=\paperwidth]{NLM-2024-Title-Background.png}}
+  \setbeamertemplate{footline}{}
+  \begin{frame}
+    \vspace{6\baselineskip}
+    \titlepage
+  \end{frame}
+}
+
+\setcounter{framenumber}{0}
+
+\usebackgroundtemplate{\includegraphics[width=\paperwidth,height=\paperheight]{NLM-2024-Slide-Background.png}}
+
+% \begin{frame}{Outline}
+%   \tableofcontents[sectionstyle=show,subsectionstyle=hide]
+% \end{frame}
+
+% \begin{frame}{Outline}
+%   \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
+% \end{frame}
+
+\begin{frame}
+  \frametitle{Ontology IDs and Descriptions (1 of 2)}
+  \framesubtitle{}
+  \begin{itemize}\footnotesize
+  \item[\href{"http://purl.obolibrary.org/obo/cl.owl"}{cl}]: Cell
+    Ontology ... a structured controlled vocabulary for cell types in
+    animals
+  \item[\href{"http://purl.obolibrary.org/obo/pcl.owl"}{pcl}]:
+    Provisional Cell Ontology [describes] cell types that are
+    provisionally defined by experimental techniques such as single
+    cell or single nucleus transcriptomics rather than a
+    straightforward \& coherent set of properties
+  \item[\href{"https://raw.githubusercontent.com/Cellular-Semantics/CellMark/refs/heads/main/clm-kg.owl"}{clm-kg}]:
+    A data-linked knowledge graph for the Cell Ontology
+  \item[\href{"https://purl.obolibrary.org/obo/go/extensions/go-plus.owl"}{go}]:
+    Gene Ontology ... for describing the function of genes and gene
+    products
+  \item[\href{"http://purl.obolibrary.org/obo/uberon/uberon-base.owl"}{uberon}]:
+    Uberon multi-species anatomy ontology ... covering animals and
+    bridging multiple species-specific ontologies
+  \item[\href{"http://purl.obolibrary.org/obo/ncbitaxon/subsets/taxslim.owl"}{ncbitaxon}]:
+    An ontology representation of the NCBI organismal taxonomy, the
+    slim is intended to cover:
+    \begin{itemize}\scriptsize
+    \item Anything used in a taxon constraint in an ontology
+    \item All UniProt Reference Proteomes
+    \item Any taxon that has a non-IEA annotation in GO
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ontology IDs and Descriptions (2 of 2)}
+  \framesubtitle{}
+  \begin{itemize}\footnotesize
+  \item[\href{"http://purl.obolibrary.org/obo/mondo/mondo-simple.owl"}{mondo}]:
+    Mondo Disease Ontology a global community effort to harmonize
+    multiple disease resources to yield a coherent merged ontology
+  \item[\href{"http://purl.obolibrary.org/obo/pato.owl"}{pato}]:
+    Phenotype And Trait Ontology ... of phenotypic qualities
+    (properties, attributes or characteristics)
+  \item[\href{"http://purl.obolibrary.org/obo/hancestro/hancestro.owl"}{hancestro}]:
+    Human Ancestry Ontology ... provides a systematic description of
+    the ancestry concepts used in the NHGRI-EBI Catalog of published
+    genome-wide association studies
+  \item[\href{"http://purl.obolibrary.org/obo/mmusdv.owl"}{mmusdv}]:
+    Mouse Developmental Stages [describes] life cycle stages for Mus
+    Musculus
+  \item[\href{"http://purl.obolibrary.org/obo/hsapdv.owl"}{hsapdv}]:
+    Human Developmental Stages [describes] life cycle stages for Human
+  \item[\href{"https://raw.githubusercontent.com/kharchenkolab/cap_ontology/main/capo-base.owl"}{capo-base}]:
+    Unknown
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Counts by Triple Type and Size (MB)}
+  \framesubtitle{}
+  \begin{table}\footnotesize
+    \begin{center}
+      \begin{tabular}{rrrrrrrrrrrr}
+        \hline
+        ID & UUU & UUB & UUL & BUU & BUB & BUL & MB \\
+        \hline
+        \hline
+        cl & 60634 & 32563 & 141165 & 299574 & 43843 & 109339 & 54 \\
+        pcl & 474328 & 61001 & 719776 & 549945 & 108567 & 128188 & 173 \\
+        clm-kg & 127037 & 279 & g46930 & 279518 & 1220 & 138556 & 42 \\
+        go-plus & 253343 & 119410 & 486680 & 1124050 & 142958 & 312045 & 196 \\
+        uberon-base & 52154 & 24543 &163080 & 300330 & 24875 & 132317 & 56 \\
+        taxslim & 90300 & 0 & 176005 & 139368 & 0 & 34842 & 35 \\
+        mondo-simple & 264104 & 0 & 351417 & 1115995 & 0 & 761643 & 187 \\
+        pato & 28639 & 12014 & 63188 & 100065 & 15107 & 36775 & 20 \\
+        hancestro & 6190 & 2049 & 8189 & 7240 & 89 & 618 & 2 \\
+        mmusdv & 539 & 255 & 1470 & 1389 & 0 & 416 & 1 \\
+        hsapdv & 817 & 463 & 1995 & 2265 & 7 & 578 & 1 \\
+        capo-base & 244 & 6 & 111 & 70 & 20 & 19 & 1 \\
+        \hline \\
+      \end{tabular}
+    \end{center}
+    U denotes URIRef, B denotes BNode, and L denotes Literal
+  \end{table}
+\end{frame}
+
+%% f
+%% \begin{frame}
+%%   \frametitle{}
+%%   \framesubtitle{}
+%% \end{frame}
+
+%% i
+%% \begin{itemize}
+%% \item[]
+%% \end{itemize}
+
+%% e
+%% \begin{enumerate}
+%% \item
+%% \item
+%% \end{enumerate}
+
+%% c
+%% \begin{columns}
+%%   \begin{column}{0.5\textwidth}
+%%   \end{column}
+%%   \begin{column}{0.5\textwidth}
+%%   \end{column}
+%% \end{columns}
+
+%% g
+%% \begin{frame}
+%%   \frametitle{}
+%%   \framesubtitle{}
+%%   \begin{figure}
+%%     \begin{center}
+%%       \includegraphics[height=0.8\textheight]{}
+%%     \end{center}
+%%   \end{figure}
+%% \end{frame}
+
+%% b
+%% \begin{frame}
+%%   \frametitle{}
+%%   \framesubtitle{}
+%%   \begin{table}
+%%     \begin{center}
+%%       \input{}
+%%     \end{center}
+%%   \end{table}
+%% \end{frame}
+
+\end{document}
